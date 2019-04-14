@@ -263,10 +263,6 @@ static int lex_misc(struct token *t) {
 	if (get_keyword(t->s_val, NULL) == 0)
 		t->type = TOKEN_KEYWORD;
 
-//	for (j = 0; j < sizeof(keywords)/sizeof(*keywords); j++)
-//		if (strcmp(t->s_val, keywords[j]) == 0)
-//			t->type = TOKEN_KEYWORD;
-
 	t->span = i - column;
 	column = i;
 	/* skip over colon, but don't have included it in the name */
