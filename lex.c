@@ -4,18 +4,10 @@
 #include <ctype.h>
 
 #include "lex.h"
+#include "util.h"
 
-#define emit_error(...) fprintf(stderr, "%s at (%zd,%zd): ", filename, 1 + line, 1 + column);\
-                        fprintf(stderr, __VA_ARGS__)
-
-static const char *keywords[] = {
-	"declare",
-	"byte",
-	"bytes",
-	"word",
-	"words",
-	"base",
-};
+#define emit(...) fprintf(stderr, "%s at (%zd,%zd): ", filename, 1 + line, 1 + column);\
+                  fprintf(stderr, __VA_ARGS__)
 
 static const char *filename = NULL;
 static size_t line;
@@ -26,7 +18,7 @@ static char buffer[1024]; /* XXX limitation: sources must have lines < 1024 byte
 
 static int expect(const char c) {
 	if (buffer[column] != c) {
-		emit_error("Expected '%c', got '%c'\n", c, buffer[column]);
+		emit("Expected '%c', got '%c'\n", c, buffer[column]);
 		return 1;
 	}
 	column++;
@@ -141,7 +133,7 @@ static int lex_char_escaped(struct token *t) {
 		case '\\': t->i_val = '\\'; break;
 		case '\'': t->i_val = '\''; break;
 		default:
-			emit_error("Unknown escape sequence '\\%c'\n", buffer[column]);
+			emit("Unknown escape sequence '\\%c'\n", buffer[column]);
 			break;
 	}
 	column++;
@@ -186,7 +178,7 @@ static int lex_num(struct token *t)
 	}
 
 	if (!isdigit(buffer[column])) {
-		emit_error("Error: '%c' cannot start a numerical literal\n", buffer[column]);
+		emit("Error: '%c' cannot start a numerical literal\n", buffer[column]);
 		return 1;
 	}
 
@@ -199,7 +191,7 @@ static int lex_num(struct token *t)
 
 	span = strcspn(&buffer[column], " \n\t,");
 	if (span == 0) {
-		emit_error("Error: malformed numerical literal\n");
+		emit("Error: malformed numerical literal\n");
 		return 1;
 	}
 	num_s = strndup(&buffer[column], span);
@@ -218,7 +210,7 @@ static int lex_num(struct token *t)
 			case 'b': base = 2;  break;
 			default:
 				if (!isdigit(*suffix)) {
-					emit_error("Error: '%c' is an invalid base suffix in numerical literal\n", *suffix);
+					emit("Error: '%c' is an invalid base suffix in numerical literal\n", *suffix);
 					free(num_s);
 					return 1;
 				}
@@ -231,7 +223,7 @@ static int lex_num(struct token *t)
 
 	value = strtol(num_s, &end, base);
 	if (*end != '\0') {
-		emit_error("Error: malformed numerical literal\n", *end, base);
+		emit("Error: malformed numerical literal\n", *end, base);
 		free(num_s);
 		return 1;
 	}
@@ -250,7 +242,7 @@ static int lex_misc(struct token *t) {
 	int j = 0;
 
 	if (!isalpha(buffer[column])) {
-		emit_error("Error: '%c' cannot start an identifier\n", buffer[column]);
+		emit("Error: '%c' cannot start an identifier\n", buffer[column]);
 		return 1;
 	}
 
@@ -268,9 +260,12 @@ static int lex_misc(struct token *t) {
 	if (!t->s_val)
 		return 1;
 
-	for (j = 0; j < sizeof(keywords)/sizeof(*keywords); j++)
-		if (strcmp(t->s_val, keywords[j]) == 0)
-			t->type = TOKEN_KEYWORD;
+	if (get_keyword(t->s_val, NULL) == 0)
+		t->type = TOKEN_KEYWORD;
+
+//	for (j = 0; j < sizeof(keywords)/sizeof(*keywords); j++)
+//		if (strcmp(t->s_val, keywords[j]) == 0)
+//			t->type = TOKEN_KEYWORD;
 
 	t->span = i - column;
 	column = i;

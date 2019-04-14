@@ -5,6 +5,22 @@
 #include "lex.h"
 
 /**
+ * Keywords
+ */
+static struct {
+	int look;
+	const char *str;
+} keywords[] = {
+	{ .look = 0, .str = "declare" },
+	{ .look = 0, .str = "byte"    },
+	{ .look = 0, .str = "bytes"   },
+	{ .look = 0, .str = "word"    },
+	{ .look = 0, .str = "words"   },
+	{ .look = 0, .str = "base"    },
+	{ .str = NULL },
+};
+
+/**
   * Human-readable descriptions for tokens
   */
 static struct {
@@ -117,7 +133,8 @@ int name(const char *x, type *res) { \
 	size_t i = 0; \
 	for (i = 0; lookup[i].str; i++) \
 		if (strcmp(lookup[i].str, x) == 0) { \
-			*res = lookup[i].look; \
+			if (res) \
+				*res = lookup[i].look; \
 			return 0; \
 		} \
 	return 1; \
@@ -129,6 +146,7 @@ GENERATE_STR_LOOKUP_FUNC(get_asm_from_b, b_to_asm, enum JCOND);
 GENERATE_STR_LOOKUP_FUNC(get_asm_from_reg, reg_to_asm, enum REG);
 GENERATE_STR_LOOKUP_FUNC(get_token_description, token_to_desc, enum TOKEN_TYPE);
 
+GENERATE_NUM_LOOKUP_FUNC(get_keyword, keywords, int);
 GENERATE_NUM_LOOKUP_FUNC(get_oper_from_asm, oper_to_asm, enum OPER);
 GENERATE_NUM_LOOKUP_FUNC(get_j_from_asm, j_to_asm, enum JCOND);
 GENERATE_NUM_LOOKUP_FUNC(get_b_from_asm, b_to_asm, enum JCOND);
