@@ -12,6 +12,7 @@
 static const char *filename = NULL;
 static size_t line;
 static size_t column;
+static int context_comment;
 static struct token* tokens;
 static size_t tokens_count;
 static char buffer[1024]; /* XXX limitation: sources must have lines < 1024 bytes */
@@ -285,6 +286,20 @@ int lex_line(void) {
 	struct token tok;
 
 	while (column < len) {
+		/* special case: are we still inside a block comment? */
+		if (context_comment) {
+			if (   column + 1 < len
+			    && buffer[column] == '*'
+			    && buffer[column + 1] == '/') {
+				context_comment = 0;
+				column += 2;
+				continue;
+			}
+			column++;
+			continue;
+		}
+
+		/* fallthrough: outside a comment */
 		memset(&tok, 0, sizeof(tok));
 		store_location(&tok);
 		switch (buffer[column]) {
@@ -298,12 +313,19 @@ int lex_line(void) {
 			case '\t':
 				eat_whitespace();
 				continue;
-			/*
 			case '/':
-				FIXME look ahead * or /
-				eat_block_comment();
+				if (column + 1 < len && buffer[column + 1] == '*') {
+					column += 2;
+					context_comment = 1;
+					continue;
+				} else if (column + 1 < len && buffer[column + 1] == '/') {
+					ret = lex_eol(&tok);
+					column += 2;
+					return add_token(tok);
+				} else {
+					emit("Unexpected '/'\n");
+				}
 				break;
-				*/
 			case ',':
 				ret = lex_comma(&tok);
 				break;
@@ -346,6 +368,7 @@ struct token* lex(const char *filename_local, FILE *fin, size_t *len)
 	line = 0;
 	tokens = NULL;
 	tokens_count = 0;
+	context_comment = 0;
 
 	while (fgets(buffer, sizeof(buffer), fin)) {
 		column = 0;
@@ -356,6 +379,11 @@ struct token* lex(const char *filename_local, FILE *fin, size_t *len)
 	}
 	if (!feof(fin)) {
 		perror("fgets");
+		return NULL;
+	}
+
+	if (context_comment) {
+		emit("Error: unexpected EOF while still inside block comment\n");
 		return NULL;
 	}
 
