@@ -141,7 +141,7 @@ int output_single(FILE *f, struct label *labels, size_t labels_count, struct ins
 			len = generate_single_jr_type(&i, inst.inst.jr);
 			break;
 		case INST_TYPE_JI:
-		if (   inst.inst.ji.imm_is_ident
+			if (   inst.inst.ji.imm_is_ident
 			    && look_up_label(labels, labels_count, &inst.inst.ji.imm.value, inst.inst.ji.imm.label))
 				return 1;
 
@@ -192,8 +192,6 @@ int output(FILE *fout, struct label *labels, size_t label_count, struct instruct
 #ifndef RAW
 	fprintf(fout, "v2.0 raw\n");
 #endif
-
-	printf("output: have %d instructions\n", insts_count);
 
 	for (i = 0; i < insts_count; i++)
 		if (output_single(fout, labels, label_count, insts[i]))

@@ -578,10 +578,6 @@ int parse(const char *filename_local, FILE* fd_local, struct label **labels_loca
 		}
 	}
 
-	for (i = 0; i < labels_count; i++) {
-		fprintf(stderr, "Label %s: 0x%04x\n", labels[i].name, labels[i].byte_offset);
-	}
-
 	*instructions = insts;
 	*instructions_count = insts_count;
 
