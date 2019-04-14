@@ -1,4 +1,4 @@
-OBJECTS = lex.o parse.o output.o assembler.o tok_util.o
+OBJECTS = lex.o parse.o output.o assembler.o util.o
 
 all: assembler
 
@@ -6,11 +6,11 @@ assembler: $(OBJECTS)
 
 lex.o: lex.h
 
-parse.o: lex.h parse.h instruction.h tok_util.h
+parse.o: lex.h parse.h instruction.h util.h
 
 output.o: parse.h
 
-tok_util.o: lex.h
+util.o: lex.h instruction.h
 
 
 .PHONY: clean

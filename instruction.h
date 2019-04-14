@@ -40,17 +40,6 @@ enum OPER {
 #define OPER_SHAMT (11)
 #define MASK_OPER(x) ((x) << OPER_SHAMT)
 
-static const char *oper_to_human[] = {
-	[OPER_ADD] = "add",
-	[OPER_SUB] = "sub",
-	[OPER_SHL] = "shl",
-	[OPER_SHR] = "shr",
-	[OPER_AND] = "and",
-	[OPER_OR ] = "or",
-	[OPER_XOR] = "xor",
-	[OPER_MUL] = "mul"
-};
-
 /**
  * Masks for jump and branch conditions
  * J-type instructions (jump, branch) take these as follows:
@@ -74,26 +63,6 @@ enum JCOND {
 #define MASK_JR (0x1 << 8)
 #define MASK_JUMP_REGISTER(x) ((x) << 5)
 
-static const char *j_to_human[] = {
-	[JB_UNCOND]  = "jmp",
-	[JB_NEVER]   = "jn",
-	[JB_ZERO]    = "jz",
-	[JB_NZERO]   = "jnz",
-	[JB_CARRY]   = "jc",
-	[JB_NCARRY]  = "jnc",
-	[JB_CARRYZ]  = "jcz",
-	[JB_NCARRYZ] = "jncz"
-};
-static const char *b_to_human[] = {
-	[JB_UNCOND]  = "bra",
-	[JB_NEVER]   = "bn",
-	[JB_ZERO]    = "bz",
-	[JB_NZERO]   = "bnz",
-	[JB_CARRY]   = "bc",
-	[JB_NCARRY]  = "bnc",
-	[JB_CARRYZ]  = "bcz",
-	[JB_NCARRYZ] = "bncz"
-};
 
 /**
  * Register numbers used in all manner of instructions in varying positions
@@ -107,17 +76,6 @@ enum REG {
 	REG_5 = 5,
 	REG_6 = 6,
 	REG_H = 7
-};
-
-static const char *reg_to_human[] = {
-	[REG_0] = "$0",
-	[REG_1] = "$1",
-	[REG_2] = "$2",
-	[REG_3] = "$3",
-	[REG_4] = "$4",
-	[REG_5] = "$5",
-	[REG_6] = "$6",
-	[REG_H] = "$H",
 };
 
 /**

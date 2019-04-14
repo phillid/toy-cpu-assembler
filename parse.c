@@ -9,62 +9,7 @@
 #include "lex.h"
 #include "parse.h"
 #include "instruction.h"
-#include "tok_util.h"
-
-#if 0
-struct label {
-	char *name;
-	size_t byte_offset;
-};
-
-union immediate {
-	const char *label;
-	int16_t value;
-};
-
-struct r_type {
-	enum OPER oper;
-	enum REG dest;
-	enum REG left;
-	enum REG right;
-};
-
-struct i_type {
-	enum OPER oper;
-	enum REG dest;
-	enum REG left;
-	bool imm_is_ident;
-	union immediate imm;
-};
-
-struct jr_type {
-	enum JCOND cond;
-	enum REG reg;
-};
-
-struct ji_type {
-	enum JCOND cond;
-	bool imm_is_ident;
-	union immediate imm;
-};
-
-struct b_type {
-	enum JCOND cond;
-	bool imm_is_ident;
-	union immediate imm;
-};
-
-struct instruction {
-	enum INST_TYPE type;
-	union instruction_u {
-		struct r_type r;   /* catch-all R-Type */
-		struct i_type i;   /* I-type on immediate literal */
-		struct jr_type jr; /* jump to register */
-		struct ji_type ji; /* jump to immediate */
-		struct b_type b;   /* branch to immediate literal */
-	} inst;
-};
-#endif
+#include "util.h"
 
 static const char *filename;
 static FILE *fd;
@@ -499,41 +444,38 @@ int parse_instruction(void)
 	 * parse it like normal */
 
 	enum OPER op;
-	for (op = 0; op < sizeof(oper_to_human)/sizeof(*oper_to_human); op++) {
-		if (strcmp(oper_to_human[op], cursor->s_val) == 0) {
-			kerchunk();
-			if (   parse_reg(&reg) || parse_comma()
-			    || parse_reg(&reg_left) || parse_comma()
-			    || parse_reg(&reg_right)
-			    || parse_eol())
-				return 1;
-			return parse_r_type(op, reg, reg_left, reg_right);
-		}
+	if (get_oper_from_asm(cursor->s_val, &op) == 0) {
+		kerchunk();
+		if (   parse_reg(&reg) || parse_comma()
+			|| parse_reg(&reg_left) || parse_comma()
+			|| parse_reg(&reg_right)
+			|| parse_eol())
+			return 1;
+		return parse_r_type(op, reg, reg_left, reg_right);
 	}
 	if (cursor->s_val[strlen(cursor->s_val) - 1] == 'i') {
 		/* temporarily remove 'i' from end */
 		cursor->s_val[strlen(cursor->s_val) - 1] = '\0';
-		for (op = 0; op < sizeof(oper_to_human)/sizeof(*oper_to_human); op++) {
-			if (strcmp(oper_to_human[op], cursor->s_val) == 0) {
-				kerchunk();
-				if (   parse_reg(&reg) || parse_comma()
-					|| parse_reg(&reg_left) || parse_comma())
-					return 1;
 
-				switch (cursor->type) {
-					case TOKEN_NUMERIC:
-						if (parse_imm(&imm) || parse_eol())
-							return 1;
-						return parse_i_type(op, reg, reg_left, imm);
-					case TOKEN_IDENT:
-						if (parse_ident(&ident) || parse_eol())
-							return 1;
-						return parse_i_ident_type(op, reg, reg_left, ident);
-					default:
-						emit("Error: Expected numeric literal or identifier, got %s\n",
-							get_token_description(cursor->type));
+		if ((get_oper_from_asm(cursor->s_val, &op)) == 0) {
+			kerchunk();
+			if (   parse_reg(&reg) || parse_comma()
+				|| parse_reg(&reg_left) || parse_comma())
+				return 1;
+
+			switch (cursor->type) {
+				case TOKEN_NUMERIC:
+					if (parse_imm(&imm) || parse_eol())
 						return 1;
-				}
+					return parse_i_type(op, reg, reg_left, imm);
+				case TOKEN_IDENT:
+					if (parse_ident(&ident) || parse_eol())
+						return 1;
+					return parse_i_ident_type(op, reg, reg_left, ident);
+				default:
+					emit("Error: Expected numeric literal or identifier, got %s\n",
+						get_token_description(cursor->type));
+					return 1;
 			}
 		}
 		/* fallthrough: pop it back on, we might need it */
@@ -541,47 +483,43 @@ int parse_instruction(void)
 	}
 
 	enum JCOND cond;
-	for (cond = 0; cond < sizeof(j_to_human)/sizeof(*j_to_human); cond++) {
-		if (strcmp(j_to_human[cond], cursor->s_val) == 0) {
-			kerchunk();
-			switch (cursor->type) {
-				case TOKEN_REGISTER:
-					if (parse_reg(&reg) || parse_eol())
-						return 1;
-					return parse_j_reg_type(cond, reg);
-				case TOKEN_NUMERIC:
-					if (parse_imm(&imm) || parse_eol())
-						return 1;
-					return parse_j_imm_type(cond, imm);
-				case TOKEN_IDENT:
-					if (parse_ident(&ident) || parse_eol())
-						return 1;
-					return parse_j_ident_type(cond, ident);
-				default:
-					emit("Error: Expected register, numeric literal, or identifier, got %s\n",
-						get_token_description(cursor->type));
+	if (get_j_from_asm(cursor->s_val, &cond) == 0) {
+		kerchunk();
+		switch (cursor->type) {
+			case TOKEN_REGISTER:
+				if (parse_reg(&reg) || parse_eol())
 					return 1;
-			}
+				return parse_j_reg_type(cond, reg);
+			case TOKEN_NUMERIC:
+				if (parse_imm(&imm) || parse_eol())
+					return 1;
+				return parse_j_imm_type(cond, imm);
+			case TOKEN_IDENT:
+				if (parse_ident(&ident) || parse_eol())
+					return 1;
+				return parse_j_ident_type(cond, ident);
+			default:
+				emit("Error: Expected register, numeric literal, or identifier, got %s\n",
+					get_token_description(cursor->type));
+				return 1;
 		}
 	}
 
-	for (cond = 0; cond < sizeof(b_to_human)/sizeof(*b_to_human); cond++) {
-		if (strcmp(b_to_human[cond], cursor->s_val) == 0) {
-			kerchunk();
-			switch (cursor->type) {
-				case TOKEN_NUMERIC:
-					if (parse_imm(&imm) || parse_eol())
-						return 1;
-					return parse_b_imm_type(cond, imm);
-				case TOKEN_IDENT:
-					if (parse_ident(&ident) || parse_eol())
-						return 1;
-					return parse_b_ident_type(cond, ident);
-				default:
-					emit("Error: Expected numeric literal, or identifier, got %s\n",
-						get_token_description(cursor->type));
+	if (get_b_from_asm(cursor->s_val, &cond) == 0) {
+		kerchunk();
+		switch (cursor->type) {
+			case TOKEN_NUMERIC:
+				if (parse_imm(&imm) || parse_eol())
 					return 1;
-			}
+				return parse_b_imm_type(cond, imm);
+			case TOKEN_IDENT:
+				if (parse_ident(&ident) || parse_eol())
+					return 1;
+				return parse_b_ident_type(cond, ident);
+			default:
+				emit("Error: Expected numeric literal, or identifier, got %s\n",
+					get_token_description(cursor->type));
+				return 1;
 		}
 	}
 
