@@ -92,7 +92,6 @@ int parse_comma(void)
 int parse_imm(uint16_t *imm)
 {
 	EXPECT_CRITICAL(TOKEN_NUMERIC);
-	/* FIXME allow identifiers? or is that job of parent */
 	*imm = cursor->i_val;
 	kerchunk();
 	return 0;
@@ -181,43 +180,18 @@ int parse_label()
 int parse_reg(enum REG *reg)
 {
 	EXPECT_CRITICAL(TOKEN_REGISTER);
-	/* valid registers are: $0, $1, $2, $3, $4, $5, $6, $7, $Z, $H
-	 * the latter two are aliases for $0 and $7 respectively
-	 */
-	if (strlen(cursor->s_val) != 1) {
-		emit("Error: incorrect register name length (%d)\n", strlen(cursor->s_val));
+
+	if (get_reg_from_asm(cursor->s_val, reg)) {
+		emit("Error: Unknown register\n");
 		return 1;
 	}
 
-	switch (cursor->s_val[0])
-	{
-		case 'Z': /* fallthrough */
-		case 'z': /* fallthrough */
-		case '0': *reg = REG_0; break;
-		case '1': *reg = REG_1; break;
-		case '2': *reg = REG_2; break;
-		case '3': *reg = REG_3; break;
-		case '4': *reg = REG_4; break;
-		case '5': *reg = REG_5; break;
-		case '6': *reg = REG_6; break;
-		case 'h': /* fallthrough */
-		case 'H': /* fallthrough */
-		case '7': *reg = REG_H; break;
-		default:
-			emit("Error: unknown register '%c'\n", cursor->s_val[0]);
-			return 1;
-	}
 	kerchunk();
 	return 0;
 }
 
 int parse_i_type(enum OPER oper, enum REG dest, enum REG left, uint16_t imm)
 {
-//	fprintf(stderr, "<DEBUG>: ITYPE %s <%s> <%s> <%d>\n",
-//		oper_to_human[oper],
-//		reg_to_human[dest],
-//		reg_to_human[left],
-//		imm);
 	struct instruction i;
 	i.type = INST_TYPE_NI;
 	i.inst.i.oper = oper;
@@ -230,7 +204,7 @@ int parse_i_type(enum OPER oper, enum REG dest, enum REG left, uint16_t imm)
 		return 1;
 
 	/* FIXME detect narrow/wide */
-	byte_offset += 2;
+	byte_offset += NITYPE_SIZE_BYTES;
 	return 0;
 }
 
@@ -248,18 +222,12 @@ int parse_i_ident_type(enum OPER oper, enum REG dest, enum REG left, char *ident
 		return 1;
 
 	/* FIXME detect narrow/wide */
-	byte_offset += 2;
+	byte_offset += NITYPE_SIZE_BYTES;
 	return 0;
 }
 
 int parse_r_type(enum OPER oper, enum REG dest, enum REG left, enum REG right)
 {
-//	fprintf(stderr, "<DEBUG>: RTYPE %s <%s> <%s> <%s>\n",
-//		oper_to_human[oper],
-//		reg_to_human[dest],
-//		reg_to_human[left],
-//		reg_to_human[right]);
-
 	struct instruction i;
 	i.type = INST_TYPE_R;
 	i.inst.r.oper = oper;
@@ -270,17 +238,12 @@ int parse_r_type(enum OPER oper, enum REG dest, enum REG left, enum REG right)
 	if (add_instruction(i))
 		return 1;
 
-	/* FIXME #define */
-	byte_offset += 2;
+	byte_offset += RTYPE_SIZE_BYTES;
 	return 0;
 }
 
 int parse_j_reg_type(enum JCOND cond, enum REG reg)
 {
-//	fprintf(stderr, "<DEBUG>: JRTYPE %s <%s>\n",
-//		j_to_human[cond],
-//		reg_to_human[reg]);
-
 	struct instruction i;
 	i.type = INST_TYPE_JR;
 	i.inst.jr.cond = cond;
@@ -289,19 +252,13 @@ int parse_j_reg_type(enum JCOND cond, enum REG reg)
 	if (add_instruction(i))
 		return 1;
 
-	/* FIXME #define */
-	byte_offset += 2;
+	byte_offset += JRTYPE_SIZE_BYTES;
 	return 0;
 }
 
 int parse_j_imm_type(enum JCOND cond, uint16_t imm)
 {
-//	fprintf(stderr, "<DEBUG>: JITYPE %s <0x%04x>\n",
-//		j_to_human[cond],
-//		imm);
-
 	struct instruction i;
-
 	i.type = INST_TYPE_JI;
 	i.inst.ji.cond = cond;
 	i.inst.ji.imm_is_ident = false;
@@ -310,16 +267,12 @@ int parse_j_imm_type(enum JCOND cond, uint16_t imm)
 	if (add_instruction(i))
 		return 1;
 
-	/* FIXME #define */
-	byte_offset += 4;
+	byte_offset += JITYPE_SIZE_BYTES;
 	return 0;
 }
 
 int parse_j_ident_type(enum JCOND cond, char *ident)
 {
-//	fprintf(stderr, "<DEBUG>: JTYPE %s <%s>\n",
-//		b_to_human[cond],
-//		ident);
 	struct instruction i;
 
 	i.type = INST_TYPE_JI;
@@ -330,16 +283,12 @@ int parse_j_ident_type(enum JCOND cond, char *ident)
 	if (add_instruction(i))
 		return 1;
 
-	/* FIXME #define */
-	byte_offset += 4;
+	byte_offset += JITYPE_SIZE_BYTES;
 	return 0;
 }
 
 int parse_b_imm_type(enum JCOND cond, int16_t imm)
 {
-//	fprintf(stderr, "<DEBUG>: BTYPE %s <0x%04x>\n",
-//		b_to_human[cond],
-//		imm);
 	struct instruction i;
 
 	i.type = INST_TYPE_B;
@@ -350,16 +299,12 @@ int parse_b_imm_type(enum JCOND cond, int16_t imm)
 	if (add_instruction(i))
 		return 1;
 
-	/* FIXME #define */
-	byte_offset += 2;
+	byte_offset += BTYPE_SIZE_BYTES;
 	return 0;
 }
 
 int parse_b_ident_type(enum JCOND cond, char *ident)
 {
-//	fprintf(stderr, "<DEBUG>: BTYPE %s <%s>\n",
-//		b_to_human[cond],
-//		ident);
 	struct instruction i;
 
 	i.type = INST_TYPE_B;
@@ -370,8 +315,7 @@ int parse_b_ident_type(enum JCOND cond, char *ident)
 	if (add_instruction(i))
 		return 1;
 
-	/* FIXME #define */
-	byte_offset += 2;
+	byte_offset += BTYPE_SIZE_BYTES;
 	return 0;
 }
 
@@ -567,7 +511,6 @@ int parse(const char *filename_local, FILE* fd_local, struct label **labels_loca
 				break;
 			case TOKEN_KEYWORD:
 				/* FIXME parse declare bytes etc */
-				printf("DEBUG: found keyword `%s'\n", cursor->s_val);
 				kerchunk();
 				kerchunk();
 				kerchunk();

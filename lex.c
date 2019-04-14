@@ -50,7 +50,6 @@ static int add_token(struct token t) {
 	}
 
 	tokens[tokens_count - 1] = t;
-//	printf("Adding token from (%d,%d ~%d), str %s int %d\n", t.line, t.column, t.span, t.s_val, t.i_val);
 	return 0;
 }
 
@@ -81,7 +80,8 @@ static int lex_register(struct token *t) {
 		;
 	}
 
-	t->s_val = strndup(&buffer[column], i - column);
+	/* -1, +1 to include $ */
+	t->s_val = strndup(&buffer[column - 1], i - column + 1);
 	if (!t->s_val) {
 		perror("strndup");
 		return 1;

@@ -108,6 +108,9 @@ static struct {
 	{ .look = REG_5, .str = "$5" },
 	{ .look = REG_6, .str = "$6" },
 	{ .look = REG_H, .str = "$H" },
+	/* non-preferred aliases: */
+	{ .look = REG_0, .str = "$z" },
+	{ .look = REG_H, .str = "$7" },
 	{ .str = NULL },
 };
 

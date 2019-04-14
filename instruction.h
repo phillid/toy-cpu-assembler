@@ -22,6 +22,13 @@ enum INST_TYPE {
 #define MASK_INST_WITYPE (0x8000)
 #define MASK_INST_JTYPE  (0xC000)
 
+#define RTYPE_SIZE_BYTES  2 /* instruction fits in 16 bits */
+#define NITYPE_SIZE_BYTES 2 /* instruction fits in 16 bits */
+#define BTYPE_SIZE_BYTES  2 /* instruction fits in 16 bits */
+#define JRTYPE_SIZE_BYTES 2 /* instruction fits in 16 bits */
+#define WITYPE_SIZE_BYTES 4 /* 16-bit instruction + 16-bit immediate */
+#define JITYPE_SIZE_BYTES 4 /* 16-bit instruction + 16-bit immediate */
+
 /**
  * ALU operation types
  * R-type and I-type take 3-bit ALU oper as bits:
