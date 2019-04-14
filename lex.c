@@ -151,7 +151,7 @@ static int lex_char(struct token *t) {
 	} else {
 		t->type = TOKEN_NUMERIC;
 		t->span = 3; /* len 'x' == 3 */
-		t->i_val = buffer[column];
+		t->i_val = buffer[column++];
 	}
 	if (expect('\''))
 		return 1;
