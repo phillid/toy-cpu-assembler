@@ -63,6 +63,13 @@ static int add_token(struct token t) {
 	return 0;
 }
 
+static struct token last_token(void) {
+	if (tokens_count)
+		return tokens[tokens_count - 1];
+	else
+		return (struct token){ .type = TOKEN_EOL };
+}
+
 static int lex_comma(struct token *t) {
 	if (expect(','))
 		return 1;
@@ -251,11 +258,6 @@ static int lex_misc(struct token *t) {
 	int i = 0;
 	int j = 0;
 
-	if (!isalpha(buffer[column])) {
-		emit("Error: '%c' cannot start an identifier\n", buffer[column]);
-		return 1;
-	}
-
 	for (i = column; isalnum(buffer[i]); i++) {
 		;
 	}
@@ -278,6 +280,12 @@ static int lex_misc(struct token *t) {
 	/* skip over colon, but don't have included it in the name */
 	if (t->type == TOKEN_LABEL) {
 		column++;
+	} else {
+		/* non-labels must start with an alpha */
+		if (!isalpha(t->s_val[0])) {
+			emit("Error: '%c' cannot start an identifier\n", t->s_val[0]);
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -356,7 +364,8 @@ int lex_line(void) {
 				break;
 			/* FIXME add support for expressions like `addi $0, $0, (1+2*3) */
 			default:
-				if (isdigit(buffer[column])) {
+				/* allow numerical to start label only when at start of line */
+				if (isdigit(buffer[column]) && last_token().type != TOKEN_EOL) {
 					ret = lex_num(&tok);
 				} else {
 					ret = lex_misc(&tok);

@@ -165,7 +165,7 @@ int output_single(FILE *f, struct label *labels, size_t labels_count, struct ins
 	}
 
 	if (len == 2) {
-//#define RAW
+#define RAW
 #ifdef RAW
 		fputc(0xFF & (i >> 24), f);
 		fputc(0xFF & (i >> 16), f);
