@@ -22,6 +22,14 @@ enum INST_TYPE {
 #define MASK_INST_WITYPE (0x8000)
 #define MASK_INST_JTYPE  (0xC000)
 
+#define INST_TYPE_RTYPE  0
+#define INST_TYPE_NITYPE 1
+#define INST_TYPE_WITYPE 2
+#define INST_TYPE_JTYPE  3
+#define INST_TYPE_SHAMT (14)
+#define MASK_INST_TYPE(x) ((x) << INST_TYPE_SHAMT)
+#define GET_INST_TYPE(x) (0x3 & ((x) >> INST_TYPE_SHAMT))
+
 #define RTYPE_SIZE_BYTES  2 /* instruction fits in 16 bits */
 #define NITYPE_SIZE_BYTES 2 /* instruction fits in 16 bits */
 #define BTYPE_SIZE_BYTES  2 /* instruction fits in 16 bits */
@@ -46,6 +54,7 @@ enum OPER {
 };
 #define OPER_SHAMT (11)
 #define MASK_OPER(x) ((x) << OPER_SHAMT)
+#define GET_OPER(x) (0x7 & ((x) >> OPER_SHAMT))
 
 /**
  * Masks for jump and branch conditions
@@ -64,11 +73,14 @@ enum JCOND {
 };
 #define JB_SHAMT   (10)
 #define MASK_JB_COND(x) ((x) << JB_SHAMT)
+#define GET_JB_COND(x) (0x7 & ((x) >> JB_SHAMT))
+
 #define MASK_IS_JUMP   (0 << 13)
 #define MASK_IS_BRANCH (1 << 13)
 #define MASK_JI (0x0 << 8)
 #define MASK_JR (0x1 << 8)
 #define MASK_JUMP_REGISTER(x) ((x) << 5)
+#define GET_JUMP_REG(x) (0x07 & ((x) >> 5))
 
 
 /**
@@ -92,19 +104,24 @@ enum REG {
 /* destination reg: xxxxx___ xxxxxxxx */
 #define REG_DEST_OFFSET (8)
 #define MASK_REG_DEST(x) ((x) << REG_DEST_OFFSET)
+#define GET_REG_DEST(x) (0x7 & ((x) >> REG_DEST_OFFSET))
 
 /* left reg: xxxxxxxx ___xxxxx */
 #define REG_LEFT_OFFSET (5)
 #define MASK_REG_LEFT(x) ((x) << REG_LEFT_OFFSET)
+#define GET_REG_LEFT(x) (0x7 & ((x) >> REG_LEFT_OFFSET))
 
 /* right reg (R-type only): xxxxxxxx xxx___xx */
 #define REG_RIGHT_OFFSET (2)
 #define MASK_REG_RIGHT(x) ((x) << REG_RIGHT_OFFSET)
+#define GET_REG_RIGHT(x) (0x7 & ((x) >> REG_RIGHT_OFFSET))
 
 /* five LSb are narrow immediate value */
 #define MASK_NI_IMM(x) ((x) & 0x1F)
+#define GET_NI_IMM(x) (0x1F & (x))
 
 /* 10 LSb is branch offset */
 #define MASK_B_OFFSET(x) ((x) & 0x3FF)
+#define GET_B_OFFSET(x) ((x) & 0x3FF)
 
 #endif /* INSTRUCTION_H */
