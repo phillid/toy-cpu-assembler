@@ -14,7 +14,7 @@ fail() {
 }
 
 pass() {
-	echo -e '[\e[0;32mPASS\e[0m] '"$1"
+	echo -e '[\e[1;32mPASS\e[0m] '"$1"
 }
 
 clean() {
@@ -22,18 +22,11 @@ clean() {
 	rm -r "$WORK"
 }
 
-trap clean EXIT
-
-check_expected()
-{
-	[ -z "$1" ] && echo WARN: check_expected called with no argument
-	if [ -f "$1.expected" ] ; then
-		if ! diff "$1.expected" "$1.tmp" >/dev/null; then
-			fail "$1 didn't match expected"
-		fi
-	fi
-}
-
+if [ "$1" == "noclean" ]; then
+	NO_CLEAN=1
+else
+	NO_CLEAN=0
+fi
 WORK=$(mktemp -d)
 pushd $(dirname "$0") >/dev/null
 export ASM="$PWD/../../assembler"
@@ -62,7 +55,7 @@ for first_stage_asm in *.test ; do
 	fi
 
 	# first stage bin and second stage identical for test pass
-	if diff "$first_stage_bin" "$second_stage_bin"; then
+	if diff "$first_stage_bin" "$second_stage_bin" >/dev/null; then
 		pass "$first_stage_asm"
 	else
 		fail "$first_stage_asm" "binary mismatch"
@@ -71,5 +64,11 @@ for first_stage_asm in *.test ; do
 
 done
 popd >/dev/null
+
+if [[ "$failure" != "0" && "$NO_CLEAN" == "1"  ]] ; then
+	echo "Warning: Leaving work dir $WORK in place. Please remove this yourself"
+else
+	clean
+fi
 
 exit "$has_failure"
