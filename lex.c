@@ -1,21 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "lex.h"
 #include "util.h"
 
-#define emit(...) fprintf(stderr, "%s at (%zd,%zd): ", filename, 1 + line, 1 + column);\
-                  fprintf(stderr, __VA_ARGS__)
-
 static const char *filename = NULL;
+static FILE *fd;
 static size_t line;
 static size_t column;
 static int context_comment;
 static struct token* tokens;
 static size_t tokens_count;
 static char buffer[1024]; /* XXX limitation: sources must have lines < 1024 bytes */
+
+static void emit(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	fprintf(stderr, "%s at (%zd,%zd): ", filename, 1 + line, 1 + column);
+	vfprintf(stderr, fmt, args);
+	indicate_file_area(fd, 1 + line, 1 + column, 1);
+	va_end(args);
+}
 
 static int expect(const char c) {
 	if (buffer[column] != c) {
@@ -324,6 +333,7 @@ int lex_line(void) {
 					return add_token(tok);
 				} else {
 					emit("Unexpected '/'\n");
+					return 1;
 				}
 				break;
 			case ',':
@@ -365,6 +375,7 @@ int lex_line(void) {
 struct token* lex(const char *filename_local, FILE *fin, size_t *len)
 {
 	filename = filename_local;
+	fd = fin;
 	line = 0;
 	tokens = NULL;
 	tokens_count = 0;

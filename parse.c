@@ -23,7 +23,7 @@ static struct instruction *insts;
 static size_t insts_count;
 static size_t byte_offset;
 
-void emit(const char *fmt, ...)
+static void emit(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
