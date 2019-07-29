@@ -33,7 +33,7 @@ export ASM="$PWD/../../assembler"
 export DISASM="$PWD/../../disassembler"
 has_failure=0
 
-for first_stage_asm in *.test ; do
+for first_stage_asm in *.asm ; do
 	first_stage_bin="$WORK/first_stage.bin"
 	second_stage_asm="$WORK/second_stage.asm"
 	second_stage_bin="$WORK/second_stage.bin"
