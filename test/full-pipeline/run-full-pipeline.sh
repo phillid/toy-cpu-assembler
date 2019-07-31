@@ -34,9 +34,9 @@ export DISASM="$PWD/../../disassembler"
 has_failure=0
 
 for first_stage_asm in *.asm ; do
-	first_stage_bin="$WORK/first_stage.bin"
-	second_stage_asm="$WORK/second_stage.asm"
-	second_stage_bin="$WORK/second_stage.bin"
+	first_stage_bin="$WORK/${first_stage_asm}-first_stage.bin"
+	second_stage_asm="$WORK/${first_stage_asm}-second_stage.asm"
+	second_stage_bin="$WORK/${first_stage_asm}-second_stage.bin"
 
 	# Assemble test code
 	if ! "$ASM" "$first_stage_asm" "$first_stage_bin" ; then
