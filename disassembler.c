@@ -60,11 +60,12 @@ int disasm_jreg(uint16_t i, uint16_t unused)
 	return 0;
 }
 
-int disasm_bimm(uint16_t i, uint16_t unused)
+int disasm_bimm(uint16_t i, uint16_t pc)
 {
 	const char *inst = get_asm_from_b(GET_JB_COND(i));
-	/* FIXME immediate value is meant to be signed */
-	printf("%s  0x%x\n", inst, GET_B_OFFSET(i));
+	struct {signed int s:10;} sign;
+	int offset = sign.s = GET_B_OFFSET(i);
+	printf("%s  0x%x\n", inst, pc + 2 * offset);
 	return 0;
 }
 
@@ -81,6 +82,7 @@ int disasm(FILE *f)
 	size_t offs = 0;
 	size_t extra_read = 0;
 	uint16_t inst = 0;
+	uint16_t extra_arg = 0;
 	uint8_t c[2] = { 0 };
 	int (*disasm_inst)(uint16_t, uint16_t);
 
@@ -100,6 +102,7 @@ int disasm(FILE *f)
 					break;
 				}
 				extra_read = sizeof(c);
+				extra_arg = c[0] << 16 | c[1];
 				disasm_inst = disasm_witype;
 				break;
 			case INST_TYPE_JTYPE:
@@ -110,6 +113,7 @@ int disasm(FILE *f)
 				 */
 				if (inst & MASK_IS_BRANCH) {
 					disasm_inst = disasm_bimm;
+					extra_arg = offs;
 				} else {
 					if (inst & MASK_JR) {
 						disasm_inst = disasm_jreg;
@@ -118,6 +122,7 @@ int disasm(FILE *f)
 							ret = -errno;
 							break;
 						}
+						extra_arg = c[0] << 16 | c[1];
 						extra_read = sizeof(c);
 						disasm_inst = disasm_jimm;
 					}
@@ -133,7 +138,7 @@ int disasm(FILE *f)
 			break;
 		}
 		printf("%04x:\t", offs);
-		ret = disasm_inst(inst, c[0] << 8 | c[1]);
+		ret = disasm_inst(inst, extra_arg);
 		if (ret < 0) {
 			fprintf(stderr, "Error handling instruction at byte %zd\n", offs);
 			break;
