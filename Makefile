@@ -1,5 +1,5 @@
 ASM_OBJECTS = lex.o parse.o output.o assembler.o util.o
-DISASM_OBJECTS = util.o
+DISASM_OBJECTS = disassembler.o util.o input_bin.o output_asm.o
 
 all: assembler disassembler
 
@@ -19,5 +19,5 @@ util.o: lex.h instruction.h
 clean:
 	- rm -f assembler disasm $(ASM_OBJECTS)
 
-test:
+test: all
 	make -C test test

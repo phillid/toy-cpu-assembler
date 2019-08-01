@@ -45,7 +45,7 @@ for first_stage_asm in *.asm ; do
 	fi
 
 	# Disassemble test code and re-assemble that disassembly
-	if ! "$DISASM" "$first_stage_bin" > "$second_stage_asm" ; then
+	if ! "$DISASM" "$first_stage_bin" "$second_stage_asm" ; then
 		fail "$first_stage_asm" "first stage disassembly failed"
 		continue
 	fi
