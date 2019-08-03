@@ -406,6 +406,13 @@ struct token* lex(const char *filename_local, FILE *fin, size_t *len)
 		return NULL;
 	}
 
+	/* no tokens? just an EOL then */
+	if (tokens_count == 0) {
+		struct token eol = {0};
+		lex_eol(&eol);
+		add_token(eol);
+	}
+
 	*len = tokens_count;
 	return tokens;
 }

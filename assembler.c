@@ -7,6 +7,9 @@
 #include "instruction.h"
 #include "output/output_bin.h"
 
+//#define DEBUG
+#include "debug.h"
+
 void print_help(const char *argv0)
 {
 	fprintf(stderr, "Syntax: %s <in.asm> <out.bin>\n", argv0);
@@ -45,18 +48,22 @@ int main(int argc, char **argv)
 		perror("fopen");
 		return error_ret;
 	}
+	debug("Opened fin\n");
 
 	if ((fout = fopen(path_out, "wb")) == NULL) {
 		fprintf(stderr, "Error opening %s: ", path_out);
 		perror("fopen");
 		return error_ret;
 	}
+	debug("Opened fout\n");
 /****/
 	struct token *tokens = NULL;
 	size_t tok_count = 0;
 
 	if ((tokens = lex(path_in, fin, &tok_count)) == NULL)
 		return error_ret;
+
+	debug("Lexed.\n");
 
 	/* FIXME package these things into `tok_result`, `parse_result` etc */
 	struct instruction *insts;
@@ -66,12 +73,16 @@ int main(int argc, char **argv)
 	if ((ret = parse(path_in, fin, &labels, &labels_count, tokens, tok_count, &insts, &insts_count)))
 		return error_ret && ret;
 
+	debug("Parsed.\n");
+
 	/* FIXME insert pass for sanity checking identifiers, sizes of values */
 
 	/* FIXME insert optional pass for optimisation */
 
 	if ((ret = output_bin(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
+
+	debug("Output.\n");
 
 	return 0;
 }
