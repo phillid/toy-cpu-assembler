@@ -143,17 +143,17 @@ int name(const char *x, type *res) { \
 	return 1; \
 }
 
-GENERATE_STR_LOOKUP_FUNC(get_asm_from_oper, oper_to_asm, enum OPER);
-GENERATE_STR_LOOKUP_FUNC(get_asm_from_j, j_to_asm, enum JCOND);
-GENERATE_STR_LOOKUP_FUNC(get_asm_from_b, b_to_asm, enum JCOND);
-GENERATE_STR_LOOKUP_FUNC(get_asm_from_reg, reg_to_asm, enum REG);
-GENERATE_STR_LOOKUP_FUNC(get_token_description, token_to_desc, enum TOKEN_TYPE);
+GENERATE_STR_LOOKUP_FUNC(get_asm_from_oper, oper_to_asm, enum OPER)
+GENERATE_STR_LOOKUP_FUNC(get_asm_from_j, j_to_asm, enum JCOND)
+GENERATE_STR_LOOKUP_FUNC(get_asm_from_b, b_to_asm, enum JCOND)
+GENERATE_STR_LOOKUP_FUNC(get_asm_from_reg, reg_to_asm, enum REG)
+GENERATE_STR_LOOKUP_FUNC(get_token_description, token_to_desc, enum TOKEN_TYPE)
 
-GENERATE_NUM_LOOKUP_FUNC(get_keyword, keywords, int);
-GENERATE_NUM_LOOKUP_FUNC(get_oper_from_asm, oper_to_asm, enum OPER);
-GENERATE_NUM_LOOKUP_FUNC(get_j_from_asm, j_to_asm, enum JCOND);
-GENERATE_NUM_LOOKUP_FUNC(get_b_from_asm, b_to_asm, enum JCOND);
-GENERATE_NUM_LOOKUP_FUNC(get_reg_from_asm, reg_to_asm, enum REG);
+GENERATE_NUM_LOOKUP_FUNC(get_keyword, keywords, int)
+GENERATE_NUM_LOOKUP_FUNC(get_oper_from_asm, oper_to_asm, enum OPER)
+GENERATE_NUM_LOOKUP_FUNC(get_j_from_asm, j_to_asm, enum JCOND)
+GENERATE_NUM_LOOKUP_FUNC(get_b_from_asm, b_to_asm, enum JCOND)
+GENERATE_NUM_LOOKUP_FUNC(get_reg_from_asm, reg_to_asm, enum REG)
 
 
 void indicate_file_area(FILE* fd, size_t line, size_t column, size_t span)

@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -Wpedantic
 
 EXECUTABLES = assembler disassembler
 
