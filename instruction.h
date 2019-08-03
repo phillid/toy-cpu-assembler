@@ -94,7 +94,8 @@ enum REG {
 	REG_4 = 4,
 	REG_5 = 5,
 	REG_6 = 6,
-	REG_H = 7
+	REG_H = 7,
+	REG_COUNT
 };
 
 /**

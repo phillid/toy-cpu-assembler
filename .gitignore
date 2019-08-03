@@ -2,5 +2,6 @@
 *.bin
 assembler
 disassembler
+emulator
 asmcat
 bincat

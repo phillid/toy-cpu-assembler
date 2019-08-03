@@ -151,6 +151,7 @@ static int disasm_file(FILE *f)
 					/* just used up 4 bytes, and couldn't read more. break out*/
 					goto read_eof;
 				}
+				/* FALLTHROUGH */
 			case 2:
 				/* have just read 2 bytes: shift down and pack new in */
 				inst = extra;

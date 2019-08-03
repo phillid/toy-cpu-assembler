@@ -1,7 +1,8 @@
-EXECUTABLES = assembler disassembler asmcat bincat
+EXECUTABLES = assembler disassembler emulator asmcat bincat
 
 ASM_OBJECTS = assembler.o lex.o parse.o output/output_bin.o util.o
 DISASM_OBJECTS = disassembler.o input/input_bin.o output/output_asm.o util.o
+EMUL_OBJECTS = input/input_bin.o util.o
 ASMCAT_OBJECTS = asmcat.o lex.o parse.o output/output_asm.o util.o
 BINCAT_OBJECTS = bincat.o input/input_bin.o output/output_bin.o util.o
 
@@ -15,6 +16,8 @@ all: $(EXECUTABLES)
 assembler: $(ASM_OBJECTS)
 
 disassembler: $(DISASM_OBJECTS)
+
+emulator: $(EMUL_OBJECTS)
 
 asmcat: $(ASMCAT_OBJECTS)
 
