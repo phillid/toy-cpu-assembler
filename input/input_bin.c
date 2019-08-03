@@ -83,82 +83,111 @@ static int add_instruction(struct instruction inst)
 	return 0;
 }
 
+size_t disasm_single(struct instruction *i, uint16_t pc, uint16_t inst, uint16_t extra)
+{
+	int ret = 0;
+	int extra_used = 0;
+	void (*disasm_inst)(uint16_t, uint16_t, struct instruction*);
+
+	switch (GET_INST_TYPE(inst)) {
+		case INST_TYPE_RTYPE:  disasm_inst = disasm_rtype;  break;
+		case INST_TYPE_NITYPE: disasm_inst = disasm_nitype; break;
+		case INST_TYPE_WITYPE:
+			disasm_inst = disasm_witype;
+			extra_used = 1;
+			break;
+		case INST_TYPE_JTYPE:
+			/* J Type can be split into three further subtypes:
+			 *  - branch (always immediate, 2 bytes)
+			 *  - jump reg (2 bytes)
+			 *  - jump immediate (4 bytes)
+			 */
+			if (inst & MASK_IS_BRANCH) {
+				disasm_inst = disasm_bimm;
+				/* hack PC into handler. It's expecting it */
+				extra = pc;
+			} else {
+				if (inst & MASK_JR) {
+					disasm_inst = disasm_jreg;
+				} else {
+					disasm_inst = disasm_jimm;
+					extra_used = 1;
+				}
+			}
+			break;
+		default:
+			ret = -EINVAL;
+			break;
+	}
+	if (!ret) {
+		disasm_inst(inst, extra, i);
+		/* positive return code is bytes consumed */
+		ret = extra_used ? 4 : 2;
+	}
+
+	return ret;
+}
+
 static int disasm_file(FILE *f)
 {
 	int ret = 0;
 	size_t offs = 0;
 	uint16_t inst = 0;
-	uint8_t c[2] = { 0 };
-	size_t extra_read = 0;
-	uint16_t extra_arg = 0;
+	uint16_t extra = 0;
+	uint8_t c[4] = { 0 };
+	size_t to_read = 0;
+	size_t nread = 0;
 	struct instruction i = { 0 };
-	void (*disasm_inst)(uint16_t, uint16_t, struct instruction*);
 
-	while (!feof(f) && fread(c, sizeof(c), 1, f) == 1) {
-		extra_read = 0;
-		inst = c[0] << 8 | c[1];
-		switch (GET_INST_TYPE(inst)) {
-			case INST_TYPE_RTYPE:
-				disasm_inst = disasm_rtype;
-				break;
-			case INST_TYPE_NITYPE:
-				disasm_inst = disasm_nitype;
-				break;
-			case INST_TYPE_WITYPE:
-				if (fread(c, sizeof(c), 1, f) != 1) {
-					ret = -errno;
-					break;
-				}
-				extra_read = sizeof(c);
-				extra_arg = c[0] << 16 | c[1];
-				disasm_inst = disasm_witype;
-				break;
-			case INST_TYPE_JTYPE:
-				/* J Type can be split into three further subtypes:
-				 *  - branch (always immediate, 2 bytes)
-				 *  - jump reg (2 bytes)
-				 *  - jump immediate (4 bytes)
-				 */
-				if (inst & MASK_IS_BRANCH) {
-					disasm_inst = disasm_bimm;
-					extra_arg = offs;
+	/* prime the pump with two words read */
+	to_read = 4;
+	do {
+		nread = fread(c, 1, to_read, f);
+		switch (nread) {
+			case 0:
+				if (to_read == 2) {
+					/* use up what's left in extra */
 				} else {
-					if (inst & MASK_JR) {
-						disasm_inst = disasm_jreg;
-					} else {
-						if (fread(c, sizeof(c), 1, f) != 1) {
-							ret = -errno;
-							break;
-						}
-						extra_arg = c[0] << 16 | c[1];
-						extra_read = sizeof(c);
-						disasm_inst = disasm_jimm;
-					}
+					/* just used up 4 bytes, and couldn't read more. break out*/
+					goto read_eof;
 				}
+			case 2:
+				/* have just read 2 bytes: shift down and pack new in */
+				inst = extra;
+				extra = c[0] << 8 | c[1];
+				break;
+			case 4:
+				/* have just read 4 bytes: fresh inst and extra needed */
+				inst = c[0] << 8 | c[1];
+				extra = c[2] << 8 | c[3];
 				break;
 			default:
-				printf("Unhandled instruction at byte %zd\n", offs);
-				ret = -1;
-				break;
+				fprintf(stderr, "Internal error: unexpected nread '%zd'\n", nread);
+				return 1;
 		}
-		/* Fall out of loop if picking a handler errored */
-		if (ret) {
-			break;
-		}
-		disasm_inst(inst, extra_arg, &i);
-		if (ret < 0) {
+		ret = disasm_single(&i, offs, inst, extra);
+		if (ret <= 0) {
 			fprintf(stderr, "Error handling instruction at byte %zd\n", offs);
 			break;
 		}
+
 		if (add_instruction(i))
 			return 1;
-		offs += sizeof(c) + extra_read;
-	}
+
+		/* return value from disasm_single is # bytes decoded. Current byte
+		 * offset is adjusted by this, and we need to read this many more bytes
+		 * next time around */
+		offs += ret;
+		to_read = ret;
+	} while (!feof(f));
+read_eof:
+
+
 	if (!feof(f)) {
 		perror("fread");
 		ret = -errno;
 	}
-	return ret;
+	return 0;
 }
 
 int input_bin(FILE *f, struct instruction **i, size_t *i_count)
