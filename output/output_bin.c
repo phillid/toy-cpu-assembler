@@ -183,7 +183,7 @@ int output_single(FILE *f, struct label *labels, size_t labels_count, struct ins
 	return 0;
 }
 
-int output(FILE *fout, struct label *labels, size_t label_count, struct instruction *insts, size_t insts_count)
+int output_bin(FILE *fout, struct label *labels, size_t label_count, struct instruction *insts, size_t insts_count)
 {
 	size_t i = 0;
 	cur_byte = 0;

@@ -4,8 +4,8 @@
 
 #include "instruction.h"
 #include "parse.h"
-#include "input_bin.h"
-#include "output_asm.h"
+#include "input/input_bin.h"
+#include "output/output_asm.h"
 
 void print_help(const char *argv0)
 {
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 	labels = NULL;
 	labels_count = 0;
 
-	if ((ret = disasm(fin, &insts, &insts_count)))
+	if ((ret = input_bin(fin, &insts, &insts_count)))
 		return error_ret && ret;
 
 	if ((ret = output_asm(fout, labels, labels_count, insts, insts_count)))

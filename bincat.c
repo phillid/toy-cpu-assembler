@@ -4,8 +4,8 @@
 
 #include "instruction.h"
 #include "parse.h"
-#include "input_bin.h"
-#include "output.h"
+#include "input/input_bin.h"
+#include "output/output_bin.h"
 
 void print_help(const char *argv0)
 {
@@ -60,10 +60,10 @@ int main(int argc, char **argv)
 	labels = NULL;
 	labels_count = 0;
 
-	if ((ret = disasm(fin, &insts, &insts_count)))
+	if ((ret = input_bin(fin, &insts, &insts_count)))
 		return error_ret && ret;
 
-	if ((ret = output(fout, labels, labels_count, insts, insts_count)))
+	if ((ret = output_bin(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
 
 	return 0;

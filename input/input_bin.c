@@ -83,9 +83,6 @@ static int add_instruction(struct instruction inst)
 	return 0;
 }
 
-
-
-/* FIXME needs whatsit arguments. f, tok, tok length */
 static int disasm_file(FILE *f)
 {
 	int ret = 0;
@@ -164,7 +161,7 @@ static int disasm_file(FILE *f)
 	return ret;
 }
 
-int disasm(FILE *f, struct instruction **i, size_t *i_count)
+int input_bin(FILE *f, struct instruction **i, size_t *i_count)
 {
 	int ret = 0;
 

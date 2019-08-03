@@ -5,7 +5,7 @@
 #include "lex.h"
 #include "parse.h"
 #include "instruction.h"
-#include "output.h"
+#include "output/output_bin.h"
 
 void print_help(const char *argv0)
 {
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
 	/* FIXME insert optional pass for optimisation */
 
-	if ((ret = output(fout, labels, labels_count, insts, insts_count)))
+	if ((ret = output_bin(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
 
 	return 0;

@@ -5,7 +5,7 @@
 #include "lex.h"
 #include "parse.h"
 #include "instruction.h"
-#include "output_asm.h"
+#include "output/output_asm.h"
 
 void print_help(const char *argv0)
 {
