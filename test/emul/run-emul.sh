@@ -45,7 +45,7 @@ for asmfile in *.asm ; do
 	 grep '^;\s\+POST\s\+' "$asmfile" ) | while read line ; do
 		reg=$(awk -F= '{print $1}' <<< "$line" | awk '{print $(NF)}')
 		val=$(awk -F= '{print $2}' <<< "$line"| awk '{print $1}')
-		subtest="${asmfile}:POST-${reg}"
+		subtest="${asmfile}:${reg}"
 		# Scrape output of emulator for register value
 		actual=$(grep "$reg" "$outfile" | awk '{print $2}')
 		if [[ "$actual" -eq "$val" ]]; then
