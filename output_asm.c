@@ -46,7 +46,7 @@ void emit_single_ji_type(FILE *f, struct ji_type inst)
 {
 	const char *cond = get_asm_from_j(inst.cond);
 
-	fprintf(f, "%s  %s\n", cond, inst.imm.value);
+	fprintf(f, "%s  0x%x\n", cond, inst.imm.value);
 }
 
 void emit_single_jr_type(FILE *f, struct jr_type inst)

@@ -61,10 +61,10 @@ int main(int argc, char **argv)
 	labels = NULL;
 	labels_count = 0;
 
-	if (ret = disasm(fin, &insts, &insts_count))
+	if ((ret = disasm(fin, &insts, &insts_count)))
 		return error_ret && ret;
 
-	if (ret = output_asm(fout, labels, labels_count, insts, insts_count))
+	if ((ret = output_asm(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
 
 	return 0;

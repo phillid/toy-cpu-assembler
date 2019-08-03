@@ -1,7 +1,11 @@
+CFLAGS = -Wall -Wextra
+
+EXECUTABLES = assembler disassembler
+
 ASM_OBJECTS = lex.o parse.o output.o assembler.o util.o
 DISASM_OBJECTS = disassembler.o util.o input_bin.o output_asm.o
 
-all: assembler disassembler
+all: $(EXECUTABLES)
 
 assembler: $(ASM_OBJECTS)
 
@@ -17,7 +21,7 @@ util.o: lex.h instruction.h
 
 .PHONY: clean test
 clean:
-	- rm -f assembler disasm $(ASM_OBJECTS)
+	- rm -f $(EXECUTABLES) $(ASM_OBJECTS) $(DISASM_OBJECTS)
 
 test: all
 	make -C test test

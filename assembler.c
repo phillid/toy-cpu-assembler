@@ -63,14 +63,14 @@ int main(int argc, char **argv)
 	size_t insts_count;
 	struct label *labels;
 	size_t labels_count;
-	if (ret = parse(path_in, fin, &labels, &labels_count, tokens, tok_count, &insts, &insts_count))
+	if ((ret = parse(path_in, fin, &labels, &labels_count, tokens, tok_count, &insts, &insts_count)))
 		return error_ret && ret;
 
 	/* FIXME insert pass for sanity checking identifiers, sizes of values */
 
 	/* FIXME insert optional pass for optimisation */
 
-	if (ret = output(fout, labels, labels_count, insts, insts_count))
+	if ((ret = output(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
 
 	return 0;

@@ -7,6 +7,7 @@
 
 static void disasm_rtype(uint16_t i, uint16_t unused, struct instruction *inst)
 {
+	(void)unused;
 	inst->type = INST_TYPE_R;
 	inst->inst.r.oper = GET_OPER(i);
 	inst->inst.r.dest = GET_REG_DEST(i);
@@ -16,6 +17,7 @@ static void disasm_rtype(uint16_t i, uint16_t unused, struct instruction *inst)
 
 static void disasm_nitype(uint16_t i, uint16_t unused, struct instruction *inst)
 {
+	(void)unused;
 	inst->type = INST_TYPE_NI;
 	inst->inst.i.oper = GET_OPER(i);
 	inst->inst.i.dest = GET_REG_DEST(i);
@@ -36,6 +38,7 @@ static void disasm_witype(uint16_t i, uint16_t imm, struct instruction *inst)
 
 static void disasm_jreg(uint16_t i, uint16_t unused, struct instruction *inst)
 {
+	(void)unused;
 	inst->type = INST_TYPE_JR;
 	inst->inst.jr.cond = GET_JB_COND(i);
 	inst->inst.jr.reg = GET_JUMP_REG(i);

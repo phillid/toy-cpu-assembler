@@ -117,7 +117,6 @@ int output_single(FILE *f, struct label *labels, size_t labels_count, struct ins
 {
 	int len = 0;
 	uint32_t i = 0;
-	uint16_t imm = 0;
 
 	switch (inst.type) {
 		case INST_TYPE_R:

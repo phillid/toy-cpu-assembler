@@ -256,7 +256,6 @@ static int lex_num(struct token *t)
 
 static int lex_misc(struct token *t) {
 	int i = 0;
-	int j = 0;
 
 	for (i = column; isalnum(buffer[i]); i++) {
 		;

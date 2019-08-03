@@ -14,7 +14,7 @@ struct label {
 
 union immediate {
 	const char *label;
-	int16_t value;
+	uint16_t value;
 };
 
 struct r_type {

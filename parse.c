@@ -474,7 +474,6 @@ int parse_instruction(void)
 int parse(const char *filename_local, FILE* fd_local, struct label **labels_local, size_t *labels_count_local, struct token *tokens_local, size_t tokens_count_local, struct instruction **instructions, size_t *instructions_count)
 {
 	int ret = 0;
-	size_t i = 0;
 	filename = filename_local;
 	fd = fd_local;
 	tokens = tokens_local;
