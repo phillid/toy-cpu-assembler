@@ -26,5 +26,6 @@ struct token {
 };
 
 struct token* lex(const char *filename_local, FILE *fin, size_t *len);
+void lex_free(struct token *ts, size_t t_count);
 
 #endif /* LEX_H */

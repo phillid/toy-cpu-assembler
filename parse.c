@@ -471,6 +471,22 @@ int parse_instruction(void)
 	return 1;
 }
 
+void parse_free_l(struct label l)
+{
+	free(l.name);
+}
+
+void parse_free(struct instruction *is, size_t i_count, struct label *ls, size_t l_count)
+{
+	size_t i = 0;
+
+	for (i = 0; i < l_count; i++) {
+		parse_free_l(ls[i]);
+	}
+	free(ls);
+	free(is);
+}
+
 int parse(const char *filename_local, FILE* fd_local, struct label **labels_local, size_t *labels_count_local, struct token *tokens_local, size_t tokens_count_local, struct instruction **instructions, size_t *instructions_count)
 {
 	int ret = 0;

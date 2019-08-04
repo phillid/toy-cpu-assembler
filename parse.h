@@ -61,5 +61,6 @@ struct instruction {
 };
 
 int parse(const char *filename_local, FILE *fd, struct label **labels_local, size_t *labels_count_local, struct token *tokens, size_t tokens_count, struct instruction **instructions, size_t *instructions_count);
+void parse_free(struct instruction *is, size_t i_count, struct label *ls, size_t l_count);
 
 #endif /* PARSE_H */

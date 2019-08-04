@@ -23,6 +23,7 @@ clean() {
 
 WORK=$(mktemp -d)
 pushd $(dirname "$0") >/dev/null
+source ../valgrind.sh
 export ASM="$PWD/../../assembler"
 export EMUL="$PWD/../../emulator"
 has_failure=0
@@ -36,26 +37,27 @@ for asmfile in *.asm ; do
 		continue
 	fi
 
-	"$EMUL" "$binfile" > "$outfile"
-
-	# Each postcondition line must hold true, and forms a separate test to
-	# help track down failures
-	(echo '; POST $0 = 0' ;
-	 echo '; POST $H = 0xFFFF' ;
-	 grep '^;\s\+POST\s\+' "$asmfile" ) | while read line ; do
-		reg=$(awk -F= '{print $1}' <<< "$line" | awk '{print $(NF)}')
-		val=$(awk -F= '{print $2}' <<< "$line"| awk '{print $1}')
-		subtest="${asmfile}:${reg}"
-		# Scrape output of emulator for register value
-		actual=$(grep "$reg" "$outfile" | awk '{print $2}')
-		if [[ "$actual" -eq "$val" ]]; then
-			pass "$subtest"
-		else
-			fail "$subtest" "postcondition (expect $val, got $actual)"
-			has_failure=1
-		fi
-	done
-
+	if "$VALGRIND" $VALGRIND_OPTS "$EMUL" "$binfile" > "$outfile" ; then
+		# Each postcondition line must hold true, and forms a separate test to
+		# help track down failures
+		(echo '; POST $0 = 0' ;
+		 echo '; POST $H = 0xFFFF' ;
+		 grep '^;\s\+POST\s\+' "$asmfile" ) | while read line ; do
+			reg=$(awk -F= '{print $1}' <<< "$line" | awk '{print $(NF)}')
+			val=$(awk -F= '{print $2}' <<< "$line"| awk '{print $1}')
+			subtest="${asmfile}:${reg}"
+			# Scrape output of emulator for register value
+			actual=$(grep "$reg" "$outfile" | awk '{print $2}')
+			if [[ "$actual" -eq "$val" ]]; then
+				pass "$subtest"
+			else
+				fail "$subtest" "postcondition (expect $val, got $actual)"
+				has_failure=1
+			fi
+		done
+	else
+		fail "$asmfile" "non-zero exit code"
+	fi
 done
 popd >/dev/null
 

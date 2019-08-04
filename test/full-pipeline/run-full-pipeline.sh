@@ -29,6 +29,7 @@ else
 fi
 WORK=$(mktemp -d)
 pushd $(dirname "$0") >/dev/null
+source ../valgrind.sh
 export ASM="$PWD/../../assembler"
 export DISASM="$PWD/../../disassembler"
 has_failure=0
@@ -39,17 +40,17 @@ for first_stage_asm in *.asm ; do
 	second_stage_bin="$WORK/${first_stage_asm}-second_stage.bin"
 
 	# Assemble test code
-	if ! "$ASM" "$first_stage_asm" "$first_stage_bin" ; then
+	if ! "$VALGRIND" $VALGRIND_OPTS "$ASM" "$first_stage_asm" "$first_stage_bin" ; then
 		fail "$first_stage_asm" "first stage assembly failed"
 		continue
 	fi
 
 	# Disassemble test code and re-assemble that disassembly
-	if ! "$DISASM" "$first_stage_bin" "$second_stage_asm" ; then
+	if ! "$VALGRIND" $VALGRIND_OPTS "$DISASM" "$first_stage_bin" "$second_stage_asm" ; then
 		fail "$first_stage_asm" "first stage disassembly failed"
 		continue
 	fi
-	if ! "$ASM" "$second_stage_asm" "$second_stage_bin" ; then
+	if ! "$VALGRIND" $VALGRIND_OPTS "$ASM" "$second_stage_asm" "$second_stage_bin" ; then
 		fail "$first_stage_asm" "second stage assembly failed"
 		continue
 	fi

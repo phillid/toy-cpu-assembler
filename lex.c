@@ -380,6 +380,24 @@ int lex_line(void) {
 	return 0;
 }
 
+void lex_free_tok(struct token t)
+{
+	if (t.s_val)
+		free(t.s_val);
+
+}
+
+void lex_free(struct token *ts, size_t t_count)
+{
+	size_t i = 0;
+
+	for (i = 0; i < t_count; i++) {
+		lex_free_tok(ts[i]);
+	}
+
+	free(ts);
+}
+
 struct token* lex(const char *filename_local, FILE *fin, size_t *len)
 {
 	filename = filename_local;

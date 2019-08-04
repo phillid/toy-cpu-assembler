@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -63,6 +64,7 @@ int main(int argc, char **argv)
 	if ((tokens = lex(path_in, fin, &tok_count)) == NULL)
 		return error_ret;
 
+	fclose(fin);
 	debug("Lexed.\n");
 
 	/* FIXME package these things into `tok_result`, `parse_result` etc */
@@ -82,6 +84,9 @@ int main(int argc, char **argv)
 	if ((ret = output_bin(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
 
+	parse_free(insts, insts_count, labels, labels_count);
+	lex_free(tokens, tok_count);
+	fclose(fout);
 	debug("Output.\n");
 
 	return 0;

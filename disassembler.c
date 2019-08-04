@@ -64,8 +64,12 @@ int main(int argc, char **argv)
 	if ((ret = input_bin(fin, &insts, &insts_count)))
 		return error_ret && ret;
 
+	fclose(fin);
+
 	if ((ret = output_asm(fout, labels, labels_count, insts, insts_count)))
 		return error_ret && ret;
 
+	parse_free(insts, insts_count, NULL, 0);
+	fclose(fout);
 	return 0;
 }
