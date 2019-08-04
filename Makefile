@@ -38,9 +38,12 @@ output/output_asm.o: output/output_asm.h parse.h util.h
 # Intput modules
 input/input_bin.o: input/input_bin.h parse.h
 
-.PHONY: clean test
+.PHONY: clean test test-quick
 clean:
 	- rm -f $(EXECUTABLES) $(ASM_OBJECTS) $(DISASM_OBJECTS) $(ASMCAT_OBJECTS) $(BINCAT_OBJECTS)
 
 test: all
 	make -C test test
+
+test-quick: all
+	make -C test test DISABLE_VALGRIND=1

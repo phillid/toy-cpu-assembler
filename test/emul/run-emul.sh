@@ -37,7 +37,7 @@ for asmfile in *.asm ; do
 		continue
 	fi
 
-	if "$VALGRIND" $VALGRIND_OPTS "$EMUL" "$binfile" > "$outfile" ; then
+	if $VALGRIND $VALGRIND_OPTS "$EMUL" "$binfile" > "$outfile" ; then
 		# Each postcondition line must hold true, and forms a separate test to
 		# help track down failures
 		(echo '; POST $0 = 0' ;
