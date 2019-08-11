@@ -30,6 +30,43 @@ export ASM="$PWD/../../assembler"
 export DISASM="$PWD/../../disassembler"
 has_failure=0
 
+test_should_fail() {
+	local t="$1"
+	local xc="$2"
+	if (( xc > 0 && xc < 128 )); then
+		pass "$t" "assembly xfailed"
+	elif (( xc == 0 )); then
+		fail "$t" "assembly didn't fail as expected"
+	else
+		fail "$t" "assembler was sent signal $(( xc - 128 ))"
+	fi
+}
+
+test_should_pass() {
+	local t="$1"
+	local xc="$2"
+	if (( xc == 0 )); then
+		pass "$t"
+	else
+		fail "$t" "assembly failed"
+	fi
+}
+
+echo "Should pass:"
+for first_stage_asm in should-pass/*.asm ; do
+	t=$(basename "$first_stage_asm")
+	first_stage_bin="$WORK/${t}-first_stage.bin"
+	log="$WORK/${t}.log"
+
+	# Assemble test code
+	set +e
+	$VALGRIND $VALGRIND_OPTS "$ASM" "$first_stage_asm" "$first_stage_bin" 2>"$log"
+	xc="$?"
+	set -e
+	test_should_pass "$t" "$xc"
+done
+
+echo "Should fail (pass means asm failed as expected):"
 for first_stage_asm in should-fail/*.asm ; do
 	t=$(basename "$first_stage_asm")
 	first_stage_bin="$WORK/${t}-first_stage.bin"
@@ -40,13 +77,7 @@ for first_stage_asm in should-fail/*.asm ; do
 	$VALGRIND $VALGRIND_OPTS "$ASM" "$first_stage_asm" "$first_stage_bin" 2>"$log"
 	xc="$?"
 	set -e
-	if (( xc > 0 && xc < 128 )); then
-			pass "$t" "assembly xfailed"
-	elif (( xc == 0 )); then
-		fail "$t" "assembly didn't fail as expected"
-	else
-		fail "$t" "assembler was sent signal $(( xc - 128 ))"
-	fi
+	test_should_fail "$t" "$xc"
 done
 popd >/dev/null
 
