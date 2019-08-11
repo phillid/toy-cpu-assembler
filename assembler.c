@@ -63,8 +63,6 @@ int main(int argc, char **argv)
 
 	if ((tokens = lex(path_in, fin, &tok_count)) == NULL)
 		return error_ret;
-
-	fclose(fin);
 	debug("Lexed.\n");
 
 	/* FIXME package these things into `tok_result`, `parse_result` etc */
@@ -86,6 +84,7 @@ int main(int argc, char **argv)
 
 	parse_free(insts, insts_count, labels, labels_count);
 	lex_free(tokens, tok_count);
+	fclose(fin);
 	fclose(fout);
 	debug("Output.\n");
 

@@ -12,7 +12,8 @@ enum TOKEN_TYPE {
 	TOKEN_STRING, /* string literal */
 	TOKEN_NUMERIC, /* numeric literal, incl literal chars */
 	TOKEN_REGISTER, /* $0, $H, $1 */
-	TOKEN_EOL /* end of line */
+	TOKEN_EOL, /* end of line */
+	TOKEN_EOF, /* end of file */
 };
 
 struct token {

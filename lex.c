@@ -296,6 +296,13 @@ static int lex_eol(struct token *t) {
 	return 0;
 }
 
+static int lex_eof(struct token *t) {
+	t->type = TOKEN_EOF;
+	t->span = 1;
+	store_location(t);
+	return 0;
+}
+
 int lex_line(void) {
 	int ret = 0;
 	size_t len = strlen(buffer);
@@ -424,12 +431,11 @@ struct token* lex(const char *filename_local, FILE *fin, size_t *len)
 		return NULL;
 	}
 
-	/* no tokens? just an EOL then */
-	if (tokens_count == 0) {
-		struct token eol = {0};
-		lex_eol(&eol);
-		add_token(eol);
-	}
+	/* tack on EOF */
+	line--; column--;
+	struct token eof = {0};
+	lex_eof(&eof);
+	add_token(eof);
 
 	*len = tokens_count;
 	return tokens;

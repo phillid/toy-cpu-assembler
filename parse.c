@@ -22,6 +22,7 @@ static size_t labels_count;
 static struct instruction *insts;
 static size_t insts_count;
 static size_t byte_offset;
+static struct token token_eof = { .type = TOKEN_EOF };
 
 static void emit(const char *fmt, ...)
 {
@@ -59,7 +60,7 @@ static int expect(enum TOKEN_TYPE e)
 		if (cursor) {
 			observed_desc = get_token_description(cursor->type);
 		} else {
-			observed_desc = "end of file";
+			observed_desc = "(error: unknown)";
 		}
 		emit("Error: Expected %s, got %s\n", expected_desc, observed_desc);
 		return 1;
@@ -73,7 +74,7 @@ void kerchunk()
 	if (tokens_pos < tokens_count - 1) {
 		cursor = &tokens[++tokens_pos];
 	} else {
-		cursor = NULL;
+		cursor = &token_eof;
 	}
 }
 
@@ -500,7 +501,7 @@ int parse(const char *filename_local, FILE* fd_local, struct label **labels_loca
 	byte_offset = 0;
 
 	cursor = tokens;
-	while (cursor) {
+	while (cursor && cursor->type != TOKEN_EOF) {
 		switch(cursor->type) {
 			case TOKEN_EOL:
 				kerchunk();

@@ -36,6 +36,7 @@ static struct {
 	{ .look = TOKEN_IDENT   , .str = "identifier"          },
 	{ .look = TOKEN_DOT     , .str = "assembler directive" },
 	{ .look = TOKEN_EOL     , .str = "end of line"         },
+	{ .look = TOKEN_EOF     , .str = "end of file"         },
 	{ .str = NULL },
 };
 
@@ -191,8 +192,8 @@ void indicate_file_area(FILE* fd, size_t line, size_t column, size_t span)
 	fputs(margin, stderr);
 	fputs(s, stderr);
 
-	/* corner case (still needed?) - buf was just return */
-	if (strlen(buf) == 1 && buf[0] == '\n') {
+	/* corner case: buf had no return */
+	if (s[strlen(s) - 1] != '\n') {
 		fputc('\n', stderr);
 	}
 
