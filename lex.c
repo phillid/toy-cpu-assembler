@@ -35,6 +35,24 @@ static int expect(const char c) {
 	return 0;
 }
 
+void lex_free_tok(struct token t)
+{
+	if (t.s_val)
+		free(t.s_val);
+
+}
+
+void lex_free(struct token *ts, size_t t_count)
+{
+	size_t i = 0;
+
+	for (i = 0; i < t_count; i++) {
+		lex_free_tok(ts[i]);
+	}
+
+	free(ts);
+}
+
 static void store_location(struct token *t) {
 	t->column = column + 1;
 	t->line = line + 1;
@@ -305,6 +323,7 @@ static int lex_eof(struct token *t) {
 
 int lex_line(void) {
 	int ret = 0;
+	int final = 0;
 	size_t len = strlen(buffer);
 	struct token tok;
 
@@ -331,7 +350,8 @@ int lex_line(void) {
 			case '!':
 			case '\n':
 				ret = lex_eol(&tok);
-				return add_token(tok);
+				final = 1;
+				break;
 			case ' ':
 			case '\t':
 				eat_whitespace();
@@ -344,7 +364,7 @@ int lex_line(void) {
 				} else if (column + 1 < len && buffer[column + 1] == '/') {
 					ret = lex_eol(&tok);
 					column += 2;
-					return add_token(tok);
+					final = 1;
 				} else {
 					emit("Unexpected '/'\n");
 					return 1;
@@ -379,30 +399,20 @@ int lex_line(void) {
 				break;
 		}
 		if (ret)
+			goto exit_free;
+
+		ret = add_token(tok);
+		if (ret)
+			goto exit_free;
+
+		if (final)
 			return ret;
-
-		if (add_token(tok))
-			return 1;
-	}
-	return 0;
-}
-
-void lex_free_tok(struct token t)
-{
-	if (t.s_val)
-		free(t.s_val);
-
-}
-
-void lex_free(struct token *ts, size_t t_count)
-{
-	size_t i = 0;
-
-	for (i = 0; i < t_count; i++) {
-		lex_free_tok(ts[i]);
 	}
 
-	free(ts);
+exit_free:
+	if (ret)
+		lex_free_tok(tok);
+	return ret;
 }
 
 struct token* lex(const char *filename_local, FILE *fin, size_t *len)

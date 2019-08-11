@@ -188,7 +188,7 @@ read_eof:
 		perror("fread");
 		ret = -errno;
 	}
-	return 0;
+	return ret < 0 ? ret : 0;
 }
 
 int input_bin(FILE *f, struct instruction **i, size_t *i_count)
